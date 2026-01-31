@@ -1,0 +1,120 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite" // Default for local dev/hackathon
+  url      = env("DATABASE_URL")
+}
+
+// User
+model User {
+  id String @id @default(cuid())
+  email String @unique
+  name String
+  phone String?
+  emailPreferences EmailPreference?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  transactions Transaction[]
+  errorLogs ErrorLog[]
+  supportTickets SupportTicket[]
+  emailLogs EmailLog[]
+}
+
+// Email Tracking
+model EmailLog {
+  id String @id @default(cuid())
+  userId String
+  user User @relation(fields: [userId], references: [id])
+  to String
+  type String // opportunity, alert, deadline, etc.
+  subject String
+  status String // sent, delivered, failed, opened, clicked
+  messageId String?
+  sentAt DateTime @default(now())
+  openedAt DateTime?
+  clickedAt DateTime?
+  failureReason String?
+  retryCount Int @default(0)
+}
+
+// Error Tracking
+model ErrorLog {
+  id String @id @default(cuid())
+  userId String
+  user User @relation(fields: [userId], references: [id])
+  errorCode String
+  errorMessage String
+  stack String?
+  context Json
+  severity String // low, medium, high, critical
+  module String
+  status String // unresolved, acknowledged, resolved
+  resolutionNotes String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  supportTickets SupportTicket[]
+}
+
+// Support Tickets
+model SupportTicket {
+  id String @id @default(cuid())
+  userId String
+  user User @relation(fields: [userId], references: [id])
+  errorId String?
+  error ErrorLog? @relation(fields: [errorId], references: [id])
+  subject String
+  description String
+  status String // open, in-progress, waiting, resolved
+  priority String // low, medium, high
+  assignedTo String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  resolvedAt DateTime?
+  resolution String?
+  
+  comments TicketComment[]
+}
+
+// Ticket Comments
+model TicketComment {
+  id String @id @default(cuid())
+  ticketId String
+  ticket SupportTicket @relation(fields: [ticketId], references: [id])
+  author String // user or support@
+  message String
+  createdAt DateTime @default(now())
+}
+
+// Transactions
+model Transaction {
+  id String @id @default(cuid())
+  userId String
+  user User @relation(fields: [userId], references: [id])
+  date DateTime
+  description String
+  amount Float
+  category String
+  confidence Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Email Preferences
+model EmailPreference {
+  id String @id @default(cuid())
+  userId String @unique
+  user User @relation(fields: [userId], references: [id])
+  sendOpportunities Boolean @default(true)
+  sendDeadlines Boolean @default(true)
+  sendUpdates Boolean @default(true)
+  sendDigest Boolean @default(false)
+  emailFrequency String // immediate, daily, weekly
+  quietHoursStart String @default("20:00")
+  quietHoursEnd String @default("08:00")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
