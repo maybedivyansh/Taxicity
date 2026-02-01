@@ -1,11 +1,22 @@
-import React from 'react';
+import type { ShadowGap } from '@/types'
 
-// Agent C to implement
-export const ShadowAlertCard = () => {
+interface Props {
+    action: ShadowGap
+}
+
+export default function ShadowActionCard({ action }: Props) {
+    const effortColor = action.effort === 'Easy' ? 'bg-green-500' : action.effort === 'Medium' ? 'bg-yellow-500' : 'bg-red-500'
+
     return (
-        <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4" role="alert">
-            <p className="font-bold">Tax Harvesting Opportunity</p>
-            <p>Sell INFY to offset 20k gains.</p>
+        <div className="glass-effect glass-hover p-4 border border-purple-500/30">
+            <div className="flex justify-between items-start">
+                <div className="flex-1">
+                    <h3 className="font-bold text-white">{action.action}</h3>
+                    <p className="text-green-400 font-bold text-lg mt-2">Save ₹{(action.potentialSavings / 1000).toFixed(0)}K</p>
+                    <p className="text-gray-400 text-sm mt-2">Priority: {action.priority}/3</p>
+                </div>
+                <span className={`${effortColor} text-white px-3 py-1 rounded text-sm`}>{action.effort}</span>
+            </div>
         </div>
-    );
-};
+    )
+}

@@ -1,4 +1,4 @@
-# Tax-Loss Shadow
+# CAi (formerly Tax-Loss Shadow)
 
 An AI-driven tax optimization dashboard designed for Indian freelancers. This project uses Next.js, TypeScript, and Tailwind CSS.
 

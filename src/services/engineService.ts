@@ -9,6 +9,7 @@ import {
     EmploymentType,
     TaxDeductions
 } from '../types/engine';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 /**
  * Calculates tax under the New Regime (FY 2026-27).
@@ -16,13 +17,6 @@ import {
  */
 export const calculateNewRegime = (grossIncome: number, employmentType: EmploymentType): TaxBreakdown => {
     let taxableIncome = grossIncome;
-
-    // Standard Deduction (New Regime often allows this for salaried)
-    // Assuming standard deduction of 75k for FY 26-27 (common projection, but prompt didn't specify, so strictly following prompt rules)
-    // Prompt says: "Rebate: If salaried and income ≤ ₹12.75L, tax = 0".
-    // Prompt does NOT mention Standard Deduction explicitly for New Regime logic list.
-    // I will strictly follow the logic list provided in the prompt.
-
     let tax = 0;
 
     // Slabs
@@ -53,12 +47,8 @@ export const calculateNewRegime = (grossIncome: number, employmentType: Employme
         tax = 0;
     }
 
-    // Surcharge (Assuming 0 for now as not specified, usually applying > 50L)
     const surcharge = 0;
-
-    // Cess (Health & Education Cess @ 4%)
     const cess = (tax + surcharge) * 0.04;
-
     const totalTax = tax + surcharge + cess;
 
     return {
@@ -84,12 +74,7 @@ export const calculateOldRegime = (grossIncome: number, deductions: TaxDeduction
         deductions.section37 +
         deductions.hra +
         deductions.lta +
-        deductions.other; // Assuming other is valid
-
-    // Standard deduction for Salaried is usually 50k in Old Regime, but prompt says "Apply deductions (80C..., 37..., HRA, etc.)"
-    // It acts as if we rely on the `deductions` object passed in.
-    // I will assume standard deduction should be part of the passed deductions or handled by the user input instructions.
-    // Given the function signature `calculateOldRegime(grossIncome, deductions)`, I will stick to subtracting provided deductions.
+        deductions.other;
 
     let taxableIncome = Math.max(0, grossIncome - totalDeductions);
     let tax = 0;
@@ -107,6 +92,7 @@ export const calculateOldRegime = (grossIncome: number, deductions: TaxDeduction
     }
 
     // Rebate u/s 87A (Old Regime: Income <= 5L, rebate up to 12.5k)
+    // Note: If tax is less than 12.5k, it becomes 0.
     if (taxableIncome <= 500000) {
         tax = 0;
     }
@@ -138,14 +124,13 @@ export const compareRegimes = (newTax: TaxBreakdown, oldTax: TaxBreakdown): Regi
     };
 };
 
-import { GoogleGenerativeAI } from '@google/generative-ai';
-
 // Initialize Gemini safely
 const getGeminiModel = () => {
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) return null;
     const genAI = new GoogleGenerativeAI(apiKey);
-    return genAI.getGenerativeModel({ model: 'gemini-pro' });
+    // Explicitly set the version to gemini-1.5-flash which is generally available and fast
+    return genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 };
 
 /**
@@ -194,7 +179,6 @@ export const classifyTransactionsBatch = async (transactions: Transaction[]): Pr
         const classifications: TransactionClassification[] = JSON.parse(cleanJson);
 
         // Map back to ensure order/completeness (Gemini might miss some or reorder)
-        // Create a map for quick lookup
         const resultMap = new Map(classifications.map(c => [c.transactionId, c]));
 
         return transactions.map(tx => {
@@ -245,7 +229,7 @@ const classifyWithKeywords = (transaction: Transaction): TransactionClassificati
     return {
         transactionId: transaction.id,
         aiCategory,
-        confidence: 0.6, // Lower confidence for keyword match
+        confidence: 0.6,
         reasoning,
         taxImpact
     };
@@ -253,7 +237,7 @@ const classifyWithKeywords = (transaction: Transaction): TransactionClassificati
 
 export const findShadowGaps = (scenario: TaxScenario): ShadowGap[] => {
     const gaps: ShadowGap[] = [];
-    const { deductions, employmentType } = scenario;
+    const { deductions } = scenario;
 
     // 1. Check 80C Limit
     const max80C = 150000;
@@ -270,7 +254,7 @@ export const findShadowGaps = (scenario: TaxScenario): ShadowGap[] => {
     }
 
     // 2. Check 80D Limit
-    const max80D = 25000; // Assuming individual < 60 years
+    const max80D = 25000;
     if (deductions.section80D < max80D) {
         const diff = max80D - deductions.section80D;
         gaps.push({
@@ -283,9 +267,7 @@ export const findShadowGaps = (scenario: TaxScenario): ShadowGap[] => {
         });
     }
 
-    // 3. Check for Misclassified Transactions (Stub logic)
-    // In a real scenario, this would iterate over transactions and identify 'Personal' ones that Gemini flagged as 'Potential Business'
-    // Here we will simulate checking for High Value Electronics marked as Personal
+    // 3. Check for Misclassified Transactions
     scenario.transactions.forEach(tx => {
         if (tx.category === 'Personal' && tx.amount > 10000 && (tx.description.toLowerCase().includes('laptop') || tx.description.toLowerCase().includes('phone'))) {
             gaps.push({
@@ -304,6 +286,5 @@ export const findShadowGaps = (scenario: TaxScenario): ShadowGap[] => {
 
 export const updateDynamicState = async (currentState: DynamicState): Promise<DynamicState> => {
     // Logic to re-calculate state
-    // This is a placeholder for the state update mechanism
     return currentState;
 };

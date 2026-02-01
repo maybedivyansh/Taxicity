@@ -17,10 +17,10 @@ export default async function handler(
         }
 
         // Determine subject based on type or use provided
-        let subject = data.title || 'Notification from Tax-Loss Shadow';
+        let subject = data.title || 'Notification from Taxicity';
         if (type === 'opportunity') subject = `💰 Tax Saving Opportunity: Save ₹${data.savings}`;
         else if (type === 'deadline') subject = `⚠️ Tax Filing Deadline: ${data.daysRemaining} Days Left`;
-        else if (type === 'error') subject = "⚠️ Error in Tax-Loss Shadow";
+        else if (type === 'error') subject = "⚠️ Error in Taxicity";
 
         const result = await emailService.sendEmail({
             to,

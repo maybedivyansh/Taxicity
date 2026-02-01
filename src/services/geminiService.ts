@@ -9,7 +9,7 @@ import {
 
 // Initialize Gemini API
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
-const model: GenerativeModel = genAI.getGenerativeModel({ model: 'gemini-pro' });
+const model: GenerativeModel = genAI.getGenerativeModel({ model: 'gemini-flash-latest' });
 
 // Cache configuration
 interface CacheEntry<T> {

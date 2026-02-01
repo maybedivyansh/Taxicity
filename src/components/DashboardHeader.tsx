@@ -22,9 +22,10 @@ export const DashboardHeader = () => {
     return (
         <header className="bg-white border-b border-gray-200 h-16 px-6 flex items-center justify-between sticky top-0 z-10 w-full">
             {/* Left: Branding or Breadcrumbs */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
+                <img src="/logo.png" alt="Taxicity" className="w-8 h-8 object-contain" />
                 <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
-                    Tax-Loss Shadow
+                    Taxicity
                 </span>
             </div>
 

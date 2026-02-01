@@ -5,6 +5,7 @@ import {
     DeprecationTracker,
     ContextualOpportunity,
 } from '@/types/intelligence';
+import { playAlertSound, playOpportunitySound } from '../styles/sounds';
 
 interface UseIntelligenceOptions {
     transactions?: any[];
@@ -99,6 +100,9 @@ export function useIntelligence(options: UseIntelligenceOptions = {}): UseIntell
 
             const alerts = await response.json();
             setSmartAlerts(alerts);
+            if (alerts.length > 0) {
+                playAlertSound();
+            }
         } catch (err) {
             setError(err as Error);
             console.error('Error fetching smart alerts:', err);
@@ -172,6 +176,8 @@ export function useIntelligence(options: UseIntelligenceOptions = {}): UseIntell
                     } else {
                         // Regular nudge
                         setNudgesStream((prev) => [...prev, data as Nudge]);
+                        // Play sound for nudge
+                        playOpportunitySound();
                     }
                 } catch (err) {
                     console.error('Error parsing nudge:', err);

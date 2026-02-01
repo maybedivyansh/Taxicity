@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { classifyWithGemini, classifyTransactionsBatch } from '../../../services/engineService';
-import { Transaction, TransactionClassification } from '../../../types/engine';
+import { classifyTransactionsBatch } from '@/services/engineService';
+import { Transaction, TransactionClassification } from '@/types/engine';
 
 type ResponseData = {
     success: boolean;
@@ -20,10 +20,9 @@ export default async function handler(
         const transactions: Transaction[] = req.body;
 
         if (!Array.isArray(transactions)) {
-            return res.status(400).json({ success: false, error: 'Input must be an array of transactions' });
+            return res.status(400).json({ success: false, error: 'Invalid input: Expected an array of transactions' });
         }
 
-        // Use the batch function for efficiency (and Gemini integration)
         const classifications = await classifyTransactionsBatch(transactions);
 
         return res.status(200).json({ success: true, data: classifications });

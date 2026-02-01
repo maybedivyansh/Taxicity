@@ -19,6 +19,9 @@ export interface TaxDeductions {
   other: number;
 }
 
+// Alias for UI components
+export type TaxInput = TaxScenario;
+
 export interface TaxScenario {
   grossIncome: number;
   employmentType: EmploymentType;

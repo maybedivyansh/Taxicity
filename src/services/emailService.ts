@@ -1,4 +1,4 @@
-import nodemailer from 'nodemailer';
+import * as nodemailer from 'nodemailer';
 import { EmailLog } from '../types/notifications';
 import { opportunityTemplate } from '../templates/emails/opportunity-email';
 import { deadlineTemplate } from '../templates/emails/deadline-alert-email';
@@ -45,7 +45,7 @@ class EmailService {
             }
 
             if (!finalHtml) {
-                finalHtml = `<p>${config.data?.message || 'Notification from Tax-Loss Shadow'}</p>`;
+                finalHtml = `<p>${config.data?.message || 'Notification from Taxicity'}</p>`;
             }
 
             // 2. Send
@@ -53,7 +53,7 @@ class EmailService {
             let result;
             if (process.env.EMAIL_USER) {
                 result = await transporter.sendMail({
-                    from: `"Tax-Loss Shadow" <${EMAIL_USER}>`,
+                    from: `"Taxicity" <${EMAIL_USER}>`,
                     to: config.to,
                     subject: config.subject,
                     html: finalHtml,

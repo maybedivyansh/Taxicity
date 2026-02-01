@@ -27,7 +27,7 @@ export class ErrorBoundary extends Component<Props, State> {
         errorHandlingService.logError({
             errorCode: 'REACT_ErrorBoundary',
             errorMessage: error.message,
-            stack: info.componentStack,
+            stack: info.componentStack || undefined,
             severity: 'high',
             context: {
                 action: 'render',

@@ -18,19 +18,24 @@ class NotificationService {
         }
     }
 
-    playSound(type: 'success' | 'alert' | 'warning' | 'info') {
+    playSound(type: 'success' | 'alert' | 'warning' | 'info' | 'opportunity' | 'deadline' | 'calculation' | 'error') {
         switch (type) {
             case 'success':
+            case 'calculation': // Sound for calculation success
                 playSuccessSound();
                 break;
             case 'alert':
+            case 'error': // Sound for errors
+            case 'deadline': // Urgent alert
                 playAlertSound();
                 break;
             case 'warning':
                 playWarningSound();
                 break;
             case 'info':
+            case 'opportunity':
                 // Optional: specific sound for info or fallback to success/alert
+                playSuccessSound();
                 break;
         }
     }
